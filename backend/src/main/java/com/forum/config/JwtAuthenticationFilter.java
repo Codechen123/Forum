@@ -104,6 +104,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return path.startsWith("/api/auth/login") || 
                path.startsWith("/api/auth/register") ||
                (path.startsWith("/api/") && "GET".equals(request.getMethod()) && 
-                (path.contains("/posts") || path.contains("/categories") || path.contains("/comments") || path.contains("/users")));
+                (path.contains("/posts") || path.contains("/categories") || path.contains("/comments")) &&
+                !path.contains("/me")) || // 排除包含 /me 的个人接口
+               // 允许访问其他用户的公开信息（非 /me 接口）
+               (path.startsWith("/api/users/") && "GET".equals(request.getMethod()) && 
+                !path.contains("/me") && (path.matches(".*/users/[^/]+/?$") || path.matches(".*/users/[^/]+/stats$")));
     }
 } 

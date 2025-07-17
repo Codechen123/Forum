@@ -64,10 +64,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/comments/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+                // 允许访问其他用户的公开信息，但不包括 /me 接口
+                .requestMatchers(HttpMethod.GET, "/users/{username}", "/users/{username}/stats").permitAll()
                 
                 // 需要认证的端点
                 .requestMatchers("/auth/me").authenticated()
+                .requestMatchers("/users/me/**").authenticated() // 个人信息相关接口需要认证
                 
                 // 帖子相关权限
                 .requestMatchers(HttpMethod.POST, "/posts/**").authenticated()
