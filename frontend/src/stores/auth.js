@@ -10,7 +10,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const login = async (credentials) => {
     try {
-      const response = await api.post("/api/auth/login", credentials);
+      const response = await api.post("/auth/login", credentials);
       const { token: newToken, user: newUser } = response.data;
 
       token.value = newToken;
@@ -27,7 +27,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const register = async (userData) => {
     try {
-      const response = await api.post("/api/auth/register", userData);
+      const response = await api.post("/auth/register", userData);
       return response.data;
     } catch (error) {
       throw error.response?.data || "注册失败";

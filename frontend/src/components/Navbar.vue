@@ -23,11 +23,14 @@
                 <router-link to="/posts">帖子</router-link>
               </el-menu-item>
               <el-sub-menu index="3">
-                <template #title>分类</template>
+                <template #title>
+                  <span>分类</span>
+                  <el-icon v-if="loading" class="loading-icon"><Loading /></el-icon>
+                </template>
                 <el-menu-item index="3-0">
                   <router-link to="/categories">所有分类</router-link>
                 </el-menu-item>
-                <template v-if="categories.length > 0">
+                <template v-if="!loading && categories.length > 0">
                   <el-menu-item 
                     v-for="category in categories.slice(0, 8)" 
                     :key="category.id" 
@@ -37,9 +40,20 @@
                       {{ category.name }}
                     </router-link>
                   </el-menu-item>
+                  <el-menu-item v-if="categories.length > 8" index="3-more">
+                    <router-link to="/categories">
+                      <span style="color: #999;">更多分类...</span>
+                    </router-link>
+                  </el-menu-item>
                 </template>
-                <el-menu-item v-else index="3-loading">
+                <el-menu-item v-else-if="loading" index="3-loading">
                   <span style="color: #999;">加载中...</span>
+                </el-menu-item>
+                <el-menu-item v-else-if="error" index="3-error">
+                  <span style="color: #f56c6c;">{{ error }}</span>
+                </el-menu-item>
+                <el-menu-item v-else index="3-empty">
+                  <span style="color: #999;">暂无分类</span>
                 </el-menu-item>
               </el-sub-menu>
             </el-menu>
@@ -101,7 +115,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { categoryAPI } from '@/api/categories'
-import { House, Plus, User, Document, SwitchButton, Search } from '@element-plus/icons-vue'
+import { House, Plus, User, Document, SwitchButton, Search, Loading } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'Navbar',
@@ -111,7 +126,8 @@ export default {
     User,
     Document,
     SwitchButton,
-    Search
+    Search,
+    Loading
   },
   setup() {
     const router = useRouter()
@@ -121,6 +137,8 @@ export default {
     const activeIndex = ref('1')
     const searchKeyword = ref('')
     const categories = ref([])
+    const loading = ref(false)
+    const error = ref('')
     
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const user = computed(() => authStore.user)
@@ -157,12 +175,21 @@ export default {
     }
     
     const fetchCategories = async () => {
+      loading.value = true
+      error.value = ''
       try {
+        console.log('Fetching categories...')
         const response = await categoryAPI.getAllCategories()
-        categories.value = response.data
-      } catch (error) {
-        console.error('Failed to fetch categories:', error)
+        console.log('Categories response:', response)
+        categories.value = response.data || []
+        console.log('Categories loaded:', categories.value)
+      } catch (err) {
+        console.error('Failed to fetch categories:', err)
+        error.value = '加载失败'
         categories.value = []
+        // 不显示错误消息，因为这会在导航栏中显示
+      } finally {
+        loading.value = false
       }
     }
     
@@ -175,6 +202,8 @@ export default {
       activeIndex,
       searchKeyword,
       categories,
+      loading,
+      error,
       isAuthenticated,
       user,
       handleSelect,
@@ -242,6 +271,16 @@ export default {
 
 .username {
   margin-left: 8px;
+}
+
+.loading-icon {
+  margin-left: 4px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .el-menu--horizontal {
