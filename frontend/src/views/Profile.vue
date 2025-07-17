@@ -13,9 +13,9 @@
           <el-tag>{{ user?.role }}</el-tag>
         </div>
       </div>
-      
+
       <el-divider />
-      
+
       <div class="user-stats">
         <div class="stat-item">
           <div class="stat-number">0</div>
@@ -30,9 +30,9 @@
           <div class="stat-label">获赞数</div>
         </div>
       </div>
-      
+
       <el-divider />
-      
+
       <div class="profile-actions">
         <el-button type="primary">编辑资料</el-button>
         <el-button>我的帖子</el-button>
@@ -50,7 +50,7 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const user = computed(() => authStore.user)
-    
+
     return {
       user
     }
@@ -106,4 +106,4 @@ export default {
   display: flex;
   gap: 10px;
 }
-</style> 
+</style>

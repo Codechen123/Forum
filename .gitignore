@@ -16,12 +16,5 @@
 Thumbs.db
 
 # IDEs
-/.idea/
-*.swp
-
-# Ignore IDE-specific files (from backend/.idea/.gitignore)
-/backend/.idea/shelf/
-/backend/.idea/workspace.xml
-/backend/.idea/httpRequests/
-/backend/.idea/dataSources/
-/backend/.idea/dataSources.local.xml 
+.idea/
+.vscode/

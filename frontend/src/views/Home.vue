@@ -14,7 +14,7 @@
               </div>
             </el-card>
           </div>
-          
+
           <div class="recent-posts">
             <el-card>
               <template #header>
@@ -23,28 +23,39 @@
                   <el-button type="text" @click="$router.push('/posts')">查看更多</el-button>
                 </div>
               </template>
-              
+
               <div v-loading="loading" class="posts-list">
-                <div v-for="post in posts" :key="post.id" class="post-item">
-                  <div class="post-header">
-                    <router-link :to="`/posts/${post.id}`" class="post-title">
-                      {{ post.title }}
-                    </router-link>
-                    <div class="post-meta">
-                      <el-tag v-if="post.category" size="small" :color="post.category.color">
-                        {{ post.category.name }}
-                      </el-tag>
-                      <span class="author">by {{ post.author.username }}</span>
-                      <span class="date">{{ formatDate(post.createdAt) }}</span>
+                <template v-if="!loading && posts.length === 0">
+                  <div class="empty-tip">暂无帖子</div>
+                </template>
+                <div v-else>
+                  <div v-for="post in posts" :key="post.id" class="post-item">
+                    <div class="post-header">
+                      <router-link :to="`/posts/${post.id}`" class="post-title">
+                        {{ post.title }}
+                      </router-link>
+                      <div class="post-meta">
+                        <el-tag v-if="post.category" size="small" :color="post.category.color">
+                          {{ post.category.name }}
+                        </el-tag>
+                        <span class="author">by {{ post.author.username }}</span>
+                        <span class="date">{{ formatDate(post.createdAt) }}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="post-content">
-                    {{ post.content.substring(0, 200) }}...
-                  </div>
-                  <div class="post-stats">
-                    <span><el-icon><View /></el-icon> {{ post.viewCount }}</span>
-                    <span><el-icon><Star /></el-icon> {{ post.likeCount }}</span>
-                    <span><el-icon><ChatLineSquare /></el-icon> {{ post.commentCount }}</span>
+                    <div class="post-content">
+                      {{ post.content.substring(0, 200) }}...
+                    </div>
+                    <div class="post-stats">
+                      <span><el-icon>
+                          <View />
+                        </el-icon> {{ post.viewCount }}</span>
+                      <span><el-icon>
+                          <Star />
+                        </el-icon> {{ post.likeCount }}</span>
+                      <span><el-icon>
+                          <ChatLineSquare />
+                        </el-icon> {{ post.commentCount }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -52,7 +63,7 @@
           </div>
         </div>
       </el-col>
-      
+
       <el-col :span="6">
         <div class="sidebar">
           <el-card class="stats-card">
@@ -78,34 +89,48 @@
               </div>
             </div>
           </el-card>
-          
+
           <el-card class="categories-card">
             <template #header>
               <h4>热门分类</h4>
             </template>
             <div class="categories-list">
-              <div v-for="category in categories" :key="category.id" class="category-item">
-                <router-link :to="`/categories/${category.id}`">
-                  <el-tag :color="category.color">{{ category.name }}</el-tag>
-                  <span class="post-count">{{ category.postCount }} 帖子</span>
-                </router-link>
+              <template v-if="!loading && categories.length === 0">
+                <div class="empty-tip">暂无分类</div>
+              </template>
+              <div v-else>
+                <div v-for="category in categories" :key="category.id" class="category-item">
+                  <router-link :to="`/categories/${category.id}`">
+                    <el-tag :color="category.color">{{ category.name }}</el-tag>
+                    <span class="post-count">{{ category.postCount }} 帖子</span>
+                  </router-link>
+                </div>
               </div>
             </div>
           </el-card>
-          
+
           <el-card class="popular-posts-card">
             <template #header>
               <h4>热门帖子</h4>
             </template>
             <div class="popular-posts">
-              <div v-for="post in popularPosts" :key="post.id" class="popular-post-item">
-                <router-link :to="`/posts/${post.id}`">
-                  <div class="post-title">{{ post.title }}</div>
-                  <div class="post-stats">
-                    <span><el-icon><View /></el-icon> {{ post.viewCount }}</span>
-                    <span><el-icon><Star /></el-icon> {{ post.likeCount }}</span>
-                  </div>
-                </router-link>
+              <template v-if="!loading && popularPosts.length === 0">
+                <div class="empty-tip">暂无热门帖子</div>
+              </template>
+              <div v-else>
+                <div v-for="post in popularPosts" :key="post.id" class="popular-post-item">
+                  <router-link :to="`/posts/${post.id}`">
+                    <div class="post-title">{{ post.title }}</div>
+                    <div class="post-stats">
+                      <span><el-icon>
+                          <View />
+                        </el-icon> {{ post.viewCount }}</span>
+                      <span><el-icon>
+                          <Star />
+                        </el-icon> {{ post.likeCount }}</span>
+                    </div>
+                  </router-link>
+                </div>
               </div>
             </div>
           </el-card>
@@ -139,11 +164,11 @@ export default {
       totalUsers: 0,
       totalComments: 0
     })
-    
+
     const formatDate = (date) => {
       return dayjs(date).format('YYYY-MM-DD HH:mm')
     }
-    
+
     const fetchPosts = async () => {
       try {
         const response = await postAPI.getAllPosts({ page: 0, size: 10 })
@@ -153,7 +178,13 @@ export default {
         console.error('Failed to fetch posts:', error)
       }
     }
-    
+
+    // mock 用户数和评论数
+    const fetchStats = () => {
+      stats.value.totalUsers = 0 // TODO: 后端补充接口后替换
+      stats.value.totalComments = 0 // TODO: 后端补充接口后替换
+    }
+
     const fetchCategories = async () => {
       try {
         const response = await categoryAPI.getAllCategories()
@@ -162,7 +193,7 @@ export default {
         console.error('Failed to fetch categories:', error)
       }
     }
-    
+
     const fetchPopularPosts = async () => {
       try {
         const response = await postAPI.getPopularPosts()
@@ -171,7 +202,7 @@ export default {
         console.error('Failed to fetch popular posts:', error)
       }
     }
-    
+
     onMounted(async () => {
       loading.value = true
       await Promise.all([
@@ -179,9 +210,10 @@ export default {
         fetchCategories(),
         fetchPopularPosts()
       ])
+      fetchStats()
       loading.value = false
     })
-    
+
     return {
       loading,
       posts,
@@ -362,4 +394,11 @@ export default {
   color: #999;
   justify-content: flex-start;
 }
-</style> 
+
+.empty-tip {
+  text-align: center;
+  color: #aaa;
+  padding: 32px 0;
+  font-size: 16px;
+}
+</style>
