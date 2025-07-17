@@ -2,8 +2,11 @@ package com.forum.service;
 
 import com.forum.dto.RegisterRequest;
 import com.forum.dto.UserDTO;
+import com.forum.dto.UserStatsDTO;
 import com.forum.entity.User;
 import com.forum.repository.UserRepository;
+import com.forum.repository.PostRepository;
+import com.forum.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +24,12 @@ public class UserService implements UserDetailsService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PostRepository postRepository;
+    
+    @Autowired
+    private CommentRepository commentRepository;
     
     @Autowired
     @Lazy
@@ -89,5 +98,37 @@ public class UserService implements UserDetailsService {
             return true;
         }
         return false;
+    }
+    
+    public UserStatsDTO getUserStats(String username) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            long postCount = postRepository.countByAuthor(user);
+            long commentCount = commentRepository.countByAuthor(user);
+            long likeCount = postRepository.sumLikeCountByAuthor(user);
+            
+            return new UserStatsDTO(postCount, commentCount, likeCount);
+        }
+        return null;
+    }
+    
+    public UserDTO updateProfile(String username, UserDTO userDTO) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            // 只更新允许修改的字段
+            if (userDTO.getBio() != null) {
+                user.setBio(userDTO.getBio());
+            }
+            if (userDTO.getAvatar() != null) {
+                user.setAvatar(userDTO.getAvatar());
+            }
+            
+            User updatedUser = userRepository.save(user);
+            return new UserDTO(updatedUser);
+        }
+        return null;
     }
 } 

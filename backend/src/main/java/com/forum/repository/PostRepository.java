@@ -25,4 +25,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     
     List<Post> findTop10ByStatusOrderByViewCountDesc(Post.Status status);
     List<Post> findTop10ByStatusOrderByLikeCountDesc(Post.Status status);
+    
+    // 统计用户帖子数量
+    long countByAuthor(User author);
+    
+    // 统计用户获得的点赞数
+    @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM Post p WHERE p.author = :author")
+    long sumLikeCountByAuthor(@Param("author") User author);
 } 

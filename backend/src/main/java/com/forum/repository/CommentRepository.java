@@ -25,4 +25,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findRepliesByParent(@Param("parent") Comment parent);
     
     long countByPost(Post post);
+    
+    // 统计用户评论数量
+    long countByAuthor(User author);
 } 
