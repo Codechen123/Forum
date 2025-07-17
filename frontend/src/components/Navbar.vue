@@ -22,9 +22,26 @@
               <el-menu-item index="2">
                 <router-link to="/posts">帖子</router-link>
               </el-menu-item>
-              <el-menu-item index="3">
-                <router-link to="/categories">分类</router-link>
-              </el-menu-item>
+              <el-sub-menu index="3">
+                <template #title>分类</template>
+                <el-menu-item index="3-0">
+                  <router-link to="/categories">所有分类</router-link>
+                </el-menu-item>
+                <template v-if="categories.length > 0">
+                  <el-menu-item 
+                    v-for="category in categories.slice(0, 8)" 
+                    :key="category.id" 
+                    :index="`3-${category.id}`"
+                  >
+                    <router-link :to="`/categories/${category.id}`">
+                      {{ category.name }}
+                    </router-link>
+                  </el-menu-item>
+                </template>
+                <el-menu-item v-else index="3-loading">
+                  <span style="color: #999;">加载中...</span>
+                </el-menu-item>
+              </el-sub-menu>
             </el-menu>
           </div>
           
@@ -83,6 +100,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { categoryAPI } from '@/api/categories'
 import { House, Plus, User, Document, SwitchButton, Search } from '@element-plus/icons-vue'
 
 export default {
@@ -102,6 +120,7 @@ export default {
     
     const activeIndex = ref('1')
     const searchKeyword = ref('')
+    const categories = ref([])
     
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const user = computed(() => authStore.user)
@@ -137,13 +156,25 @@ export default {
       }
     }
     
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryAPI.getAllCategories()
+        categories.value = response.data
+      } catch (error) {
+        console.error('Failed to fetch categories:', error)
+        categories.value = []
+      }
+    }
+    
     onMounted(() => {
       authStore.initAuth()
+      fetchCategories()
     })
     
     return {
       activeIndex,
       searchKeyword,
+      categories,
       isAuthenticated,
       user,
       handleSelect,
@@ -224,5 +255,18 @@ export default {
 .el-menu--horizontal .el-menu-item a {
   color: inherit;
   text-decoration: none;
+}
+
+.el-menu--horizontal .el-sub-menu .el-sub-menu__title {
+  color: white;
+}
+
+.el-menu--horizontal .el-sub-menu .el-menu-item a {
+  color: #333;
+  text-decoration: none;
+}
+
+.el-menu--horizontal .el-sub-menu .el-menu-item a:hover {
+  color: #409eff;
 }
 </style> 
